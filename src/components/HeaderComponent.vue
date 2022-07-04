@@ -17,6 +17,7 @@ export default {
       list: [
         { title: "FirstPage", to: "/" },
         { title: "SecondPage", to: "/SecondPage" },
+        { title: "ThirdPage", to: "/ThirdPage" },
       ],
     };
   },
