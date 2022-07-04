@@ -1,7 +1,7 @@
 <template>
   <button
     v-if="mode === 'create'"
-    class="px-2 py-1 rounded border border-black my-4"
+    class="px-2 py-1 rounded border border-black max-h-fit"
     @click="isModalOpen = true"
   >
     Add User
@@ -21,34 +21,60 @@
       <template #ModalBody>
         <form class="p-2 my-2" @submit.prevent="submit">
           <div class="my-4">
-            <label for="">Name</label>
+            <label>Name</label>
             <input
               v-model="form.name"
+              required
               type="text"
               class="rounded shadow p-2 w-full border border-black"
-              placeholder="Enter your Name"
+              placeholder="Jan Doe"
             />
           </div>
           <div class="my-4">
-            <label for="">Email</label>
+            <label>Email</label>
             <input
               v-model="form.email"
+              required
               type="email"
               class="rounded shadow p-2 w-full border border-black"
-              placeholder="Enter your Email"
+              placeholder="JanDoe@gmail.com"
             />
           </div>
           <div class="my-4">
-            <label for="">Status</label>
+            <label>Date of Birth</label>
+            <input
+              v-model="form.DOB"
+              type="date"
+              class="rounded shadow p-2 w-full border border-black"
+              required
+            />
+          </div>
+          <div class="my-4">
+            <label>Account Role</label>
             <select
-              name=""
-              id=""
+              v-model="form.role"
+              class="rounded shadow p-2 w-full border border-black"
+              required
+            >
+              <option v-for="role in roles" :key="role" :value="role.value">
+                {{ role.text }}
+              </option>
+            </select>
+          </div>
+          <div class="my-4">
+            <label>Account State</label>
+            <select
               v-model="form.status"
               class="rounded shadow p-2 w-full border border-black"
               required
             >
-              <option value="disabled">Disabled</option>
-              <option value="active">Active</option>
+              <option
+                v-for="status in accountStates"
+                :key="status"
+                :value="status.value"
+              >
+                {{ status.text }}
+              </option>
             </select>
           </div>
           <div class="my-4">
@@ -74,12 +100,32 @@
 
 <script>
 import Modal from "../../ModalComponent.vue";
-import axios from "../../../plugins/axios";
 export default {
   props: ["mode", "user"],
   data() {
     return {
       isModalOpen: false,
+      users: [],
+      roles: [
+        {
+          text: "Admin",
+          value: "admin",
+        },
+        {
+          text: "User",
+          value: "user",
+        },
+      ],
+      accountStates: [
+        {
+          text: "Active",
+          value: "active",
+        },
+        {
+          text: "Disabled",
+          value: "disabled",
+        },
+      ],
     };
   },
   computed: {
@@ -88,36 +134,67 @@ export default {
         return {
           name: "",
           email: "",
+          DOB: "",
           status: "",
+          role: "",
         };
       } else {
         return {
           name: this.user.name,
           email: this.user.email,
+          DOB: this.user.DOB,
           status: this.user.status,
+          role: this.user.role,
         };
       }
     },
+    getAge() {
+      var today = new Date();
+      var birthDate = new Date(this.form.DOB);
+      var age = today.getFullYear() - birthDate.getFullYear();
+      var month = today.getMonth() - birthDate.getMonth();
+      if (month < 0 || (month === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      return age;
+    },
   },
   methods: {
-    async submit() {
+    submit() {
       if (this.mode === "create") {
-        const { data } = await axios.post(`/users`, this.form);
+        this.form.age = this.getAge;
+        if (localStorage.getItem("Users") === null) {
+          this.users.push(this.form);
+        } else {
+          this.users = JSON.parse(localStorage.getItem("Users"));
+          this.users.push(this.form);
+        }
+        localStorage.setItem("Users", JSON.stringify(this.users));
+        delete this.form.age;
         this.isModalOpen = false;
         this.form.name = "";
         this.form.email = "";
         this.form.status = "";
-        this.$emit("newUserAdded", data);
+        this.$emit("newUserAdded", this.form);
       } else {
-        await axios.put(`/users/${this.user._id}`, this.form);
+        this.form.age = this.getAge;
+        this.users = JSON.parse(localStorage.getItem("Users"));
+        this.users = this.users.filter(
+          (user) => user.email !== this.user.email
+        );
+        this.users.push(this.form);
+        localStorage.setItem("Users", JSON.stringify(this.users));
+        delete this.form.age;
         this.isModalOpen = false;
         this.form.name = "";
         this.form.email = "";
         this.form.status = "";
-        this.$emit("userUpdated");
+        this.form.age = "";
+        this.$emit("userUpdated", this.form);
       }
     },
   },
+
   components: { Modal },
 };
 </script>

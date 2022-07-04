@@ -15,7 +15,7 @@
         <div class="flex justify-around">
           <button
             class="px-2 py-1 rounded border border-green-500 bg-green-200 my-4"
-            @click="deleteUser(userID)"
+            @click="deleteUser(userEmail)"
           >
             Yes
           </button>
@@ -33,20 +33,21 @@
 
 <script>
 import Modal from "../../ModalComponent.vue";
-import axios from "../../../plugins/axios";
 export default {
   components: { Modal },
-  props: ["userID"],
+  props: ["userEmail"],
   data() {
     return {
       isModalOpen: false,
     };
   },
   methods: {
-    async deleteUser(userID) {
-      await axios.delete(`/users/${userID}`);
+    deleteUser(userEmail) {
+      var users = JSON.parse(localStorage.getItem("Users"));
+      users = users.filter((user) => user.email !== userEmail);
+      localStorage.setItem("Users", JSON.stringify(users));
       this.isModalOpen = false;
-      this.$emit("userDeleted", userID);
+      this.$emit("userDeleted", userEmail);
     },
   },
 };
