@@ -46,7 +46,7 @@ export default {
     async deleteUser(userID) {
       await axios.delete(`/users/${userID}`);
       this.isModalOpen = false;
-      this.$emit("userDeleted",userID);
+      this.$emit("userDeleted", userID);
     },
   },
 };

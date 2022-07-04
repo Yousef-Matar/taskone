@@ -2,10 +2,10 @@
   <section class="flex flex-col w-full">
     <div class="m-auto">
       <div class="mt-10 max-w-max">
-        <AddUserComponent
+        <UserFormComponent
           @newUserAdded="addUser"
           :mode="'create'"
-        ></AddUserComponent>
+        ></UserFormComponent>
 
         <table v-if="users.length > 0">
           <thead>
@@ -42,11 +42,11 @@
                   :userID="user._id"
                   @userDeleted="removeUser"
                 ></RemoveUserComponent>
-                <AddUserComponent
+                <UserFormComponent
                   @userUpdated="updateUser"
                   :mode="update"
                   :user="user"
-                ></AddUserComponent>
+                ></UserFormComponent>
               </td>
             </tr>
           </tbody>
@@ -58,10 +58,10 @@
 
 <script>
 import axios from "../plugins/axios";
-import AddUserComponent from "./crud/user/AddUserComponent.vue";
+import UserFormComponent from "./crud/user/UserFormComponent.vue";
 import RemoveUserComponent from "./crud/user/RemoveUserComponent.vue";
 export default {
-  components: { AddUserComponent, RemoveUserComponent },
+  components: { UserFormComponent, RemoveUserComponent },
   data() {
     return {
       users: [],
