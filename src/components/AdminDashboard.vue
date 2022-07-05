@@ -123,7 +123,7 @@ export default {
       this.sortFilter = tableHeader;
     },
     sortedUsers() {
-      return this.users.sort((a, b) => {
+      return this.fliteredUsers.sort((a, b) => {
         let modifier = 1;
         if (this.sortFilterDirection === "descendingly") modifier = -1;
         if (a[this.sortFilter] < b[this.sortFilter]) return -1 * modifier;
