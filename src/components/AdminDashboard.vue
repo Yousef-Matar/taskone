@@ -1,11 +1,12 @@
 <template>
   <section class="flex flex-col w-full m-10 p-5">
     <div class="flex flex-col items-start">
-      <label class="text-lg mb-2 font-bold">Search :</label>
-      <div class="flex justify-between mb-5 w-full">
+      <label class="text-lg font-bold">Search :</label>
+      <div class="flex justify-between my-3 w-full">
         <input
+          @change="sortUsers"
           type="text"
-          v-model="filter"
+          v-model="table.searchFilter"
           class="border border-black rounded p-2 shadow"
           placeholder="Search"
         />
@@ -20,20 +21,65 @@
       <thead>
         <tr>
           <th
-            v-for="header in tableHeaders"
+            v-for="header in table.headers"
             :key="header"
             @click="sort(header.toLowerCase())"
             class="border px-4 py-2 cursor-pointer"
           >
-            {{ header }}
+            <div class="flex justify-between">
+              {{ header }}
+              <div class="flex flex-col">
+                <font-awesome-icon
+                  icon="fa-solid fa-sort-up"
+                  :class="
+                    header.toLowerCase() === table.sortingAttribute &&
+                    table.sortingType === 'ascendingly'
+                      ? 'text-black'
+                      : 'text-[#969696]'
+                  "
+                />
+                <font-awesome-icon
+                  :class="
+                    header.toLowerCase() === table.sortingAttribute &&
+                    table.sortingType === 'descendingly'
+                      ? 'text-black'
+                      : 'text-[#969696]'
+                  "
+                  icon="fa-solid fa-sort-down"
+                />
+              </div>
+            </div>
           </th>
           <th class="px-4 py-2">
-            Table is sorted {{ sortFilterDirection }} by the {{ sortFilter }}
+            <div class="flex justify-start my-3 w-full">
+              <div>
+                <label class="text-lg font-bold">Status Filter :</label>
+                <select
+                  class="border border-black rounded p-2 shadow mx-2"
+                  v-model="table.statusFilter"
+                >
+                  <option value="all">All</option>
+                  <option value="active">Active</option>
+                  <option value="disabled">Disabled</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-lg font-bold">Role Filter :</label>
+                <select
+                  class="border border-black rounded p-2 shadow mx-2"
+                  v-model="table.roleFilter"
+                >
+                  <option value="all">All</option>
+                  <option value="admin">Admin</option>
+                  <option value="user">User</option>
+                </select>
+              </div>
+            </div>
           </th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="user in sortedUsers()" :key="user._id">
+        <tr v-for="user in sortUsers()" :key="user._id">
           <td class="border px-4 py-2">
             {{ user.name }}
           </td>
@@ -86,6 +132,26 @@
         </tr>
       </tbody>
     </table>
+    <div class="flex justify-between">
+      <button
+        class="px-2 py-1 rounded border border-black m-2"
+        :class="this.currentPage === 1 ? 'bg-gray-300' : 'bg-transparent'"
+        @click="prevPage"
+      >
+        Previous
+      </button>
+      <button
+        class="px-2 py-1 rounded border border-black m-2"
+        :class="
+          currentPage * pageSize >= table.users.length
+            ? 'bg-gray-300'
+            : 'bg-transparent'
+        "
+        @click="nextPage"
+      >
+        Next
+      </button>
+    </div>
   </section>
 </template>
 
@@ -96,59 +162,115 @@ export default {
   components: { UserFormComponent, RemoveUserComponent },
   data() {
     return {
-      filter: "",
-      sortFilter: "name",
-      sortFilterDirection: "ascendingly",
-      users: [],
-      tableHeaders: ["Name", "Email", "Age", "Status", "Role"],
+      table: {
+        headers: ["Name", "Email", "Age", "Status", "Role"],
+        sortingAttribute: "name",
+        sortingType: "ascendingly",
+        searchFilter: "",
+        users: [],
+        statusFilter: "all",
+        roleFilter: "all",
+      },
+      pageSize: 5,
+      currentPage: 1,
     };
   },
   mounted() {
     if (localStorage.getItem("Users") !== null)
-      this.users = JSON.parse(localStorage.getItem("Users"));
-    this.filter = "";
+      this.table.users = JSON.parse(localStorage.getItem("Users"));
+    this.table.searchFilter = "";
   },
   methods: {
-    updateUsers() {
-      this.filter = "";
-      this.users = JSON.parse(localStorage.getItem("Users"));
+    nextPage() {
+      if (this.currentPage * this.pageSize < this.table.users.length)
+        this.currentPage++;
     },
+    prevPage() {
+      if (this.currentPage > 1) this.currentPage--;
+    },
+    updateUsers() {
+      this.table.searchFilter = "";
+      this.table.users = JSON.parse(localStorage.getItem("Users"));
+    },
+
     sort(tableHeader) {
-      if (tableHeader === this.sortFilter) {
-        this.sortFilterDirection =
-          this.sortFilterDirection === "ascendingly"
+      if (tableHeader === this.table.sortingAttribute) {
+        this.table.sortingType =
+          this.table.sortingType === "ascendingly"
             ? "descendingly"
             : "ascendingly";
       }
-      this.sortFilter = tableHeader;
+      this.table.sortingAttribute = tableHeader;
     },
-    sortedUsers() {
-      return this.fliteredUsers.sort((a, b) => {
-        let modifier = 1;
-        if (this.sortFilterDirection === "descendingly") modifier = -1;
-        if (a[this.sortFilter] < b[this.sortFilter]) return -1 * modifier;
-        if (a[this.sortFilter] > b[this.sortFilter]) return 1 * modifier;
-        return 0;
-      });
+    sortUsers() {
+      return this.fliteredUsers
+        .sort((a, b) => {
+          let modifier = 1;
+          if (this.table.sortingType === "descendingly") modifier = -1;
+          if (a[this.table.sortingAttribute] < b[this.table.sortingAttribute])
+            return -1 * modifier;
+          if (a[this.table.sortingAttribute] > b[this.table.sortingAttribute])
+            return 1 * modifier;
+          return 0;
+        })
+        .filter((row, index) => {
+          let start = (this.currentPage - 1) * this.pageSize;
+          let end = this.currentPage * this.pageSize;
+          if (index >= start && index < end) return true;
+        });
     },
   },
   computed: {
     fliteredUsers() {
-      return this.users.filter((user) => {
+      return this.table.users.filter((user) => {
         const userNames = user.name.toLowerCase();
         const userEmails = user.email.toLowerCase();
         const userAges = user.age.toString().toLowerCase();
         const accountStates = user.status.toLowerCase();
         const accountRoles = user.role.toLowerCase();
-        const searchTerm = this.filter.toLowerCase();
-
-        return (
-          userNames.includes(searchTerm) ||
-          userEmails.includes(searchTerm) ||
-          userAges.includes(searchTerm) ||
-          accountStates.includes(searchTerm) ||
-          accountRoles.includes(searchTerm)
-        );
+        const searchTerm = this.table.searchFilter.toLowerCase();
+        if (
+          this.table.statusFilter == "all" &&
+          this.table.roleFilter == "all"
+        ) {
+          return (
+            userNames.includes(searchTerm) ||
+            userEmails.includes(searchTerm) ||
+            userAges.includes(searchTerm) ||
+            accountStates.includes(searchTerm) ||
+            accountRoles.includes(searchTerm)
+          );
+        } else if (
+          this.table.statusFilter !== "all" &&
+          this.table.roleFilter == "all"
+        ) {
+          return (
+            (userNames.includes(searchTerm) ||
+              userEmails.includes(searchTerm) ||
+              userAges.includes(searchTerm) ||
+              accountRoles.includes(searchTerm)) &&
+            accountStates.includes(this.table.statusFilter)
+          );
+        } else if (
+          this.table.statusFilter == "all" &&
+          this.table.roleFilter !== "all"
+        ) {
+          return (
+            (userNames.includes(searchTerm) ||
+              userEmails.includes(searchTerm) ||
+              userAges.includes(searchTerm) ||
+              accountStates.includes(searchTerm)) &&
+            accountRoles.includes(this.table.roleFilter)
+          );
+        } else {
+          return (
+            (userNames.includes(searchTerm) ||
+              userEmails.includes(searchTerm) ||
+              userAges.includes(searchTerm)) &&
+            accountStates.includes(this.table.statusFilter) &&
+            accountRoles.includes(this.table.roleFilter)
+          );
+        }
       });
     },
   },
