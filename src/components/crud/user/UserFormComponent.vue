@@ -15,7 +15,7 @@
   </button>
 
   <teleport to="body">
-    <Modal v-if="isModalOpen" @closeModal="isModalOpen = false">
+    <Modal v-if="isModalOpen" @closeModal="closeModal">
       <template #ModalHeader v-if="mode === 'create'"> Add New User </template>
       <template #ModalHeader v-else> Update User </template>
       <template #ModalBody>
@@ -195,6 +195,16 @@ export default {
         this.form.role = "";
         this.$emit("userUpdated", this.form);
       }
+    },
+    closeModal() {
+      if (this.mode === "create") {
+        this.form.name = "";
+        this.form.email = "";
+        this.form.status = "";
+        this.form.DOB = "";
+        this.form.role = "";
+      }
+      this.isModalOpen = false;
     },
   },
 
