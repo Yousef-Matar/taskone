@@ -175,6 +175,8 @@ export default {
         this.form.name = "";
         this.form.email = "";
         this.form.status = "";
+        this.form.DOB = "";
+        this.form.role = "";
         this.$emit("newUserAdded", this.form);
       } else {
         this.form.age = this.getAge;
@@ -189,7 +191,8 @@ export default {
         this.form.name = "";
         this.form.email = "";
         this.form.status = "";
-        this.form.age = "";
+        this.form.DOB = "";
+        this.form.role = "";
         this.$emit("userUpdated", this.form);
       }
     },
