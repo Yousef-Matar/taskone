@@ -4,7 +4,6 @@
       <label class="text-lg font-bold">Search :</label>
       <div class="flex justify-between my-3 w-full">
         <input
-          @change="sortUsers"
           type="text"
           v-model="table.searchFilter"
           class="border border-black rounded p-2 shadow"
@@ -70,8 +69,13 @@
                   v-model="table.roleFilter"
                 >
                   <option value="all">All</option>
-                  <option value="admin">Admin</option>
-                  <option value="user">User</option>
+                  <option
+                    v-for="role in table.roles"
+                    :key="role"
+                    :value="role.title.toLowerCase()"
+                  >
+                    {{ role.title }}
+                  </option>
                 </select>
               </div>
             </div>
@@ -116,7 +120,7 @@
             {{ user.status }}
           </td>
           <td class="border px-4 py-2">
-            {{ user.role }}
+            {{ user.role.title }}
           </td>
           <td class="border px-4 py-2">
             <RemoveUserComponent
@@ -164,6 +168,7 @@ export default {
     return {
       table: {
         headers: ["Name", "Email", "Age", "Status", "Role"],
+        roles: JSON.parse(localStorage.getItem("Roles")),
         sortingAttribute: "name",
         sortingType: "ascendingly",
         searchFilter: "",
@@ -227,18 +232,21 @@ export default {
         const userEmails = user.email.toLowerCase();
         const userAges = user.age.toString().toLowerCase();
         const accountStates = user.status.toLowerCase();
-        const accountRoles = user.role.toLowerCase();
+        const accountRoles = user.role.title.toLowerCase();
+        const accountRoleStatus = user.role.status.toLowerCase();
         const searchTerm = this.table.searchFilter.toLowerCase();
+
         if (
           this.table.statusFilter == "all" &&
           this.table.roleFilter == "all"
         ) {
           return (
-            userNames.includes(searchTerm) ||
-            userEmails.includes(searchTerm) ||
-            userAges.includes(searchTerm) ||
-            accountStates.includes(searchTerm) ||
-            accountRoles.includes(searchTerm)
+            (userNames.includes(searchTerm) ||
+              userEmails.includes(searchTerm) ||
+              userAges.includes(searchTerm) ||
+              accountStates.includes(searchTerm) ||
+              accountRoles.includes(searchTerm)) &&
+            !accountRoleStatus.includes("inactive")
           );
         } else if (
           this.table.statusFilter !== "all" &&
@@ -249,7 +257,8 @@ export default {
               userEmails.includes(searchTerm) ||
               userAges.includes(searchTerm) ||
               accountRoles.includes(searchTerm)) &&
-            accountStates.includes(this.table.statusFilter)
+            accountStates.includes(this.table.statusFilter) &&
+            !accountRoleStatus.includes("inactive")
           );
         } else if (
           this.table.statusFilter == "all" &&
@@ -260,7 +269,8 @@ export default {
               userEmails.includes(searchTerm) ||
               userAges.includes(searchTerm) ||
               accountStates.includes(searchTerm)) &&
-            accountRoles.includes(this.table.roleFilter)
+            accountRoles.includes(this.table.roleFilter) &&
+            !accountRoleStatus.includes("inactive")
           );
         } else {
           return (
@@ -268,7 +278,8 @@ export default {
               userEmails.includes(searchTerm) ||
               userAges.includes(searchTerm)) &&
             accountStates.includes(this.table.statusFilter) &&
-            accountRoles.includes(this.table.roleFilter)
+            accountRoles.includes(this.table.roleFilter) &&
+            !accountRoleStatus.includes("inactive")
           );
         }
       });

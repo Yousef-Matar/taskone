@@ -18,6 +18,7 @@ export default {
         { title: "FirstPage", to: "/" },
         { title: "SecondPage", to: "/SecondPage" },
         { title: "ThirdPage", to: "/ThirdPage" },
+        { title: "FourthPage", to: "/FourthPage" },
       ],
     };
   },

@@ -56,8 +56,8 @@
               class="rounded shadow p-2 w-full border border-black"
               required
             >
-              <option v-for="role in roles" :key="role" :value="role.value">
-                {{ role.text }}
+              <option v-for="role in roles" :key="role" :value="role">
+                {{ role.title }}
               </option>
             </select>
           </div>
@@ -106,16 +106,7 @@ export default {
     return {
       isModalOpen: false,
       users: [],
-      roles: [
-        {
-          text: "Admin",
-          value: "admin",
-        },
-        {
-          text: "User",
-          value: "user",
-        },
-      ],
+      roles: JSON.parse(localStorage.getItem("Roles")),
       accountStates: [
         {
           text: "Active",
