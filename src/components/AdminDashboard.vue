@@ -71,6 +71,7 @@
                   <option value="all">All</option>
                   <option
                     v-for="role in table.roles"
+                    v-show="role.status === 'active'"
                     :key="role"
                     :value="role.title.toLowerCase()"
                   >

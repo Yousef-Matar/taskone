@@ -56,7 +56,12 @@
               class="rounded shadow p-2 w-full border border-black"
               required
             >
-              <option v-for="role in roles" :key="role" :value="role">
+              <option
+                v-for="role in roles"
+                :key="role"
+                :value="role"
+                v-show="role.status === 'active'"
+              >
                 {{ role.title }}
               </option>
             </select>
@@ -139,10 +144,9 @@ export default {
         };
       }
     },
-   
   },
   methods: {
-     getAge() {
+    getAge() {
       var today = new Date();
       var birthDate = new Date(this.form.DOB);
       var age = today.getFullYear() - birthDate.getFullYear();
