@@ -169,8 +169,8 @@ export default {
       table: {
         headers: ["Name", "Email", "Age", "Status", "Role"],
         roles: JSON.parse(localStorage.getItem("Roles")),
-        sortingAttribute: "name",
-        sortingType: "ascendingly",
+        sortingAttribute: "role",
+        sortingType: "descendingly",
         searchFilter: "",
         users: [],
         statusFilter: "all",
@@ -207,16 +207,33 @@ export default {
       }
       this.table.sortingAttribute = tableHeader;
     },
+
     sortUsers() {
       return this.fliteredUsers
         .sort((a, b) => {
-          let modifier = 1;
-          if (this.table.sortingType === "descendingly") modifier = -1;
-          if (a[this.table.sortingAttribute] < b[this.table.sortingAttribute])
-            return -1 * modifier;
-          if (a[this.table.sortingAttribute] > b[this.table.sortingAttribute])
-            return 1 * modifier;
-          return 0;
+          if (this.table.sortingAttribute === "role") {
+            let modifier = 1;
+            if (this.table.sortingType === "descendingly") modifier = -1;
+            if (
+              a[this.table.sortingAttribute].title <
+              b[this.table.sortingAttribute].title
+            )
+              return -1 * modifier;
+            if (
+              a[this.table.sortingAttribute].title >
+              b[this.table.sortingAttribute].title
+            )
+              return 1 * modifier;
+            return 0;
+          } else {
+            let modifier = 1;
+            if (this.table.sortingType === "descendingly") modifier = -1;
+            if (a[this.table.sortingAttribute] < b[this.table.sortingAttribute])
+              return -1 * modifier;
+            if (a[this.table.sortingAttribute] > b[this.table.sortingAttribute])
+              return 1 * modifier;
+            return 0;
+          }
         })
         .filter((row, index) => {
           let start = (this.currentPage - 1) * this.pageSize;

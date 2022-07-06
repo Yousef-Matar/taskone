@@ -139,7 +139,10 @@ export default {
         };
       }
     },
-    getAge() {
+   
+  },
+  methods: {
+     getAge() {
       var today = new Date();
       var birthDate = new Date(this.form.DOB);
       var age = today.getFullYear() - birthDate.getFullYear();
@@ -149,11 +152,9 @@ export default {
       }
       return age;
     },
-  },
-  methods: {
     submit() {
       if (this.mode === "create") {
-        this.form.age = this.getAge;
+        this.form.age = this.getAge();
         if (localStorage.getItem("Users") === null) {
           this.users.push(this.form);
         } else {
@@ -170,7 +171,7 @@ export default {
         this.form.role = "";
         this.$emit("newUserAdded", this.form);
       } else {
-        this.form.age = this.getAge;
+        this.form.age = this.getAge();
         this.users = JSON.parse(localStorage.getItem("Users"));
         this.users = this.users.filter(
           (user) => user.email !== this.user.email
